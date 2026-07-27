@@ -1,0 +1,27 @@
+# Venv
+.venv/
+
+# Secrets
+.env
+
+# Modelli scaricati automaticamente
+models/
+*.pt
+*.pth
+*.onnx
+
+# Cache audio farewell (rigenerata al primo avvio)
+data/audio_cache/
+
+# Log
+logs/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# OS
+.DS_Store
+Thumbs.db

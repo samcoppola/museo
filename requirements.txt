@@ -1,0 +1,25 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# ATTENZIONE: torch e torchaudio NON sono in questo file.
+# Vanno installati PRIMA con il comando corretto per la tua GPU (vedi setup.sh).
+# ─────────────────────────────────────────────────────────────────────────────
+
+# API
+anthropic==0.76.0
+httpx==0.28.1
+python-dotenv==1.0.1
+
+# TTS
+elevenlabs==2.35.0
+pygame==2.6.1
+sounddevice==0.5.3
+
+# STT
+faster-whisper==1.2.1
+silero-vad==6.2.0
+soundfile==0.13.1
+numpy==2.2.6
+
+# Persona detection
+opencv-python==4.13.0.92
+ultralytics==8.4.21
+
