@@ -30,7 +30,6 @@ class CharacterAgent:
         )
         self.prompts = PROMPTS
         self.model = config.MODEL
-        self.max_tokens = config.MAX_TOKENS
         self.temperature = config.TEMPERATURE
         self.conversation = ConversationManager()
 
@@ -65,7 +64,7 @@ class CharacterAgent:
         system = base_prompt.replace(placeholder, str(response_number))
 
         if response_number == 2:
-            effective_max_tokens = 200
+            effective_max_tokens = 250
         elif response_number == 3:
             effective_max_tokens = 380
         else:
@@ -117,6 +116,7 @@ class CharacterAgent:
                     system=system,
                     messages=api_messages,
                     max_tokens=effective_max_tokens,
+                    thinking={"type": "disabled"},
                 ) as stream:
                     for text in stream.text_stream:
                         if first_token_time is None:

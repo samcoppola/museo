@@ -129,7 +129,7 @@ def _generate_elevenlabs(text, lang, static=False):
             chunks_iter = client.text_to_speech.stream(
                 text=text,
                 voice_id=config.ELEVEN_VOICE,
-                model_id="eleven_multilingual_v2",
+                model_id=config.ELEVEN_MODEL_ID,
                 output_format="pcm_44100",
                 language_code=lang,
                 voice_settings=voice_settings,
@@ -145,7 +145,7 @@ def _generate_elevenlabs(text, lang, static=False):
             response = client.text_to_speech.convert(
                 text=text,
                 voice_id=config.ELEVEN_VOICE,
-                model_id="eleven_multilingual_v2",
+                model_id=config.ELEVEN_MODEL_ID,
                 output_format="mp3_44100_128",
                 language_code=lang,
                 voice_settings=voice_settings,
@@ -240,7 +240,7 @@ def _elevenlabs_pcm_stream(text: str, lang: str):
     return client.text_to_speech.stream(
         voice_id=config.ELEVEN_VOICE,
         text=text,
-        model_id="eleven_multilingual_v2",
+        model_id=config.ELEVEN_MODEL_ID,
         output_format="pcm_44100",
         language_code=lang,
         voice_settings=voice_settings,

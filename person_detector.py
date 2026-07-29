@@ -139,6 +139,11 @@ class PersonDetector:
                 else:
                     counter = max(0, counter - 1)
 
+                logger.debug(
+                    "[PersonDetector] present_now=%s person_count=%d counter=%d stable=%s",
+                    present_now, person_count, counter, stable_state,
+                )
+
                 if stable_state:
                     new_stable_state = (counter > 0)              # esce solo quando counter tocca 0
                 else:

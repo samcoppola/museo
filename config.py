@@ -15,7 +15,6 @@ API_TIMEOUT_SECONDS = 30
 
 # --- MODELLO ---
 MODEL = "claude-sonnet-5"
-MAX_TOKENS = 130      # ~95 parole — margine per non troncare frasi lunghe
 TEMPERATURE = 0.5
 
 # --- CONVERSAZIONE ---
@@ -104,6 +103,7 @@ TTS_OUTPUT_DEVICE = None  # Windows: "CABLE Input"
 # --- ELEVENLABS ---
 USE_ELEVEN_LABS = True
 ELEVEN_API_KEY = os.environ["ELEVEN_API_KEY"]
+ELEVEN_MODEL_ID = "eleven_flash_v2_5"
 ELEVEN_VOICE             = "GgHFK7Wdh706wXHjXaI3"
 ELEVEN_SPEED             = 0.85
 ELEVEN_STABILITY         = 0.70   # 0=variabile/espressivo, 1=monotono/stabile — sotto 0.30 la voce deriva su testi lunghi
@@ -122,10 +122,10 @@ PREGEN_AUDIO_DIR = os.path.join(_BASE_DIR, "data", "audio_cache")
 USE_PERSON_DETECTION         = True
 PERSON_DETECTION_CAM_INDEX   = 2      # 0 = webcam integrata, 1-2 = USB esterna
 PERSON_DETECTION_CONF        = 0.5
-PERSON_DETECTION_PERSISTENT_FRAMES = 5
+PERSON_DETECTION_PERSISTENT_FRAMES = 15  # alzato da 5: 5 causava falsi "uscita" con sfarfallii YOLO
 PERSON_DETECTION_RESIZE_WIDTH = 640
 PERSON_DETECTION_MODEL       = os.path.join(_BASE_DIR, "models", "yolo11n.pt")
-PERSON_DETECTION_EXIT_DELAY  = 1.5   # secondi di attesa dopo uscita stabile prima di chiudere
+PERSON_DETECTION_EXIT_DELAY  = 3.0   # alzato da 1.5s: più margine prima di chiudere la sessione
 
 # --- STT ---
 USE_STT        = True
@@ -133,7 +133,7 @@ WHISPER_MODEL  = os.path.join(_BASE_DIR, "models", "whisper-large-v3")
 WHISPER_DEVICE = "cuda"
 
 # VAD (usato solo con USE_STT=True)
-VAD_SILENCE_MS      = 1000   # ms di silenzio per fermare registrazione
+VAD_SILENCE_MS      = 2000   # ms di silenzio per fermare registrazione
 VAD_MIN_RECORD_MS   = 600    # durata minima registrazione
 VAD_START_THRESHOLD = 0.6    # soglia inizio parlato; alzare in ambienti rumorosi (0.7-0.8)
 VAD_STOP_THRESHOLD  = 0.25   # soglia fine parlato
@@ -146,6 +146,6 @@ TRIGGER_PHRASES_EN = ["hail commander"]
 
 # --- LOGGING ---
 LOG_DIR        = os.path.join(_BASE_DIR, "logs")
-LOG_LEVEL      = "INFO"
+LOG_LEVEL      = "DEBUG"  # temporaneo: per diagnosticare i falsi "uscita persona" (person_detector.py)
 LOG_TO_CONSOLE = False
 DEBUG_MODE     = True
