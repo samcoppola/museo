@@ -189,7 +189,7 @@ passati nelle chiamate, non solo quelli esposti in `config.py`:
 | YOLO inferenza | `person_detector.py` (`model.predict`) | `conf=self.conf` (da `PERSON_DETECTION_CONF`), `verbose=False`, nessun `device=` esplicito (auto-seleziona GPU se disponibile) |
 | Silero VAD | `stt.py` (chiamata `vad(x, SAMPLE_RATE)`) | Nessun parametro di chiamata — le soglie `VAD_START_THRESHOLD`/`VAD_STOP_THRESHOLD` sono applicate *dopo*, confrontando la probabilità ritornata, non passate al modello |
 
-### ✅ Rimosso: `MAX_TOKENS` morto in `config.py`
+### Rimosso: `MAX_TOKENS` in `config.py`
 
 **Cosa è stato tolto**: la riga `MAX_TOKENS = 130` che stava in `config.py`,
 sezione `# --- MODELLO ---` (prima si trovava a riga 16, insieme a `MODEL`
@@ -202,10 +202,9 @@ config.MAX_TOKENS` in `agent.py:33`.
 l'impressione di controllare la lunghezza delle risposte, ma non faceva
 nulla). **Chi ha una copia del progetto sul PC del museo deve applicare la
 stessa rimozione a mano** se vuole restare allineato — non è un problema
-se non lo fa (il codice funziona comunque, quel valore era già inerte),
-ma è disinformazione da togliere.
+se non lo fa (il codice funziona comunque, quel valore era già inerte).
 
-### 🔧 Da fare in produzione: alzare il cap `effective_max_tokens`
+### Da fare in produzione: alzare il cap `effective_max_tokens`
 
 **Il problema**: `agent.py:66-71` ha limiti fissi per tipo di risposta
 (attualmente 250/380/250 token). Se il modello supera il limite mentre
@@ -250,7 +249,7 @@ troncata, subito dopo la chiamata `self.client.messages.stream(...)` in
 `stream.get_final_message().stop_reason` e loggare un warning se vale
 `"max_tokens"`.
 
-### 🔧 Da fare in produzione: il fallback `RETRY_FAIL_MESSAGES` non scatta mai
+### Da fare in produzione: il fallback `RETRY_FAIL_MESSAGES` non scatta mai
 
 Vedi sopra, "Messaggi di fallback: quando scattano davvero" — il messaggio
 di scuse `RETRY_FAIL_MESSAGES` (`config.py`) esiste ed è cablato in
@@ -833,7 +832,7 @@ dall'interno di Docker o WSL2, che sono ambienti isolati.
 |---|---|
 | **Docker** | I container non vedono i device audio Windows; GPU richiede configurazione complessa; VB-Audio non raggiungibile da Unity |
 | **WSL2** | Nessun accesso diretto ai device audio Windows; webcam richiede `usbipd-win` sperimentale; VB-Audio → Unity non funziona |
-| **Native Windows** ✅ | VB-Audio funziona nativamente, GPU diretta, webcam diretta, Unity sulla stessa macchina |
+| **Native Windows** | VB-Audio funziona nativamente, GPU diretta, webcam diretta, Unity sulla stessa macchina |
 
 ---
 
