@@ -7,18 +7,29 @@ import httpx
 import logging
 import config
 from conversation import ConversationManager
-from prompts.it.comandante_v4 import SYSTEM_PROMPT_TEMPLATE as SYSTEM_PROMPT_IT
-from prompts.en.commander_v4 import SYSTEM_PROMPT_TEMPLATE as SYSTEM_PROMPT_EN
+
+# --- PROMPT ORIGINALE (senza cache) --- tenuto per riferimento/rollback ---
+# from prompts.it.comandante_v4 import SYSTEM_PROMPT_TEMPLATE as SYSTEM_PROMPT_IT
+# from prompts.en.commander_v4 import SYSTEM_PROMPT_TEMPLATE as SYSTEM_PROMPT_EN
+#
+# PROMPTS = {
+#     "it": SYSTEM_PROMPT_IT,
+#     "en": SYSTEM_PROMPT_EN,
+# }
+
+# --- PROMPT CON CACHE (attivo) ---
+from prompts.it.comandante_v4_cache import SYSTEM_PROMPT_PREFIX as PREFIX_IT, SYSTEM_PROMPT_SUFFIX as SUFFIX_IT
+from prompts.en.commander_v4_cache import SYSTEM_PROMPT_PREFIX as PREFIX_EN, SYSTEM_PROMPT_SUFFIX as SUFFIX_EN
+
+CACHE_PROMPTS = {
+    "it": (PREFIX_IT, SUFFIX_IT, "Stai dando la risposta numero: {n}\n\nSegui le istruzioni per il numero di risposta indicato sopra:"),
+    "en": (PREFIX_EN, SUFFIX_EN, "You are currently giving response number: {n}\n\nFollow the instructions for the response number indicated above:"),
+}
 
 if config.USE_AMBIENT_SOUNDS:
     from audio_manager import AmbientSoundManager
 
 logger = logging.getLogger(__name__)
-
-PROMPTS = {
-    "it": SYSTEM_PROMPT_IT,
-    "en": SYSTEM_PROMPT_EN,
-}
 
 
 class CharacterAgent:
@@ -28,7 +39,8 @@ class CharacterAgent:
             api_key=config.ANTHROPIC_API_KEY,
             timeout=httpx.Timeout(config.API_TIMEOUT_SECONDS, connect=5.0),
         )
-        self.prompts = PROMPTS
+        # self.prompts = PROMPTS  # vecchio prompt senza cache, vedi import in alto
+        self.prompts = CACHE_PROMPTS
         self.model = config.MODEL
         self.temperature = config.TEMPERATURE
         self.conversation = ConversationManager()
@@ -46,9 +58,9 @@ class CharacterAgent:
 
     def _build_system(self, lang):
         """
-        Costruisce il system prompt e il max_tokens effettivo per il turno corrente.
-        V4: sostituisce {{NUMERO_RISPOSTA}}/{{RESPONSE_NUMBER}} con il numero risposta.
-        Ritorna (system_str, effective_max_tokens).
+        Costruisce il system prompt (lista di blocchi con cache_control) e il
+        max_tokens effettivo per il turno corrente.
+        Ritorna (system_blocks, effective_max_tokens).
         """
         import time
 
@@ -56,12 +68,21 @@ class CharacterAgent:
             self.conversation_start_time = time.time()
         self.turn_count += 1
 
-        base_prompt = self.prompts.get(lang, self.prompts["it"])
-        placeholder = "{{NUMERO_RISPOSTA}}" if lang == "it" else "{{RESPONSE_NUMBER}}"
-
         # welcome = risposta 1, turn 1 → risposta 2, turn 2 → risposta 3, turn 3+ → risposta 4
         response_number = min(self.turn_count + 1, 4)
-        system = base_prompt.replace(placeholder, str(response_number))
+
+        # --- VECCHIO: prompt come stringa unica, niente cache --- tenuto per rollback ---
+        # base_prompt = self.prompts.get(lang, self.prompts["it"])
+        # placeholder = "{{NUMERO_RISPOSTA}}" if lang == "it" else "{{RESPONSE_NUMBER}}"
+        # system = base_prompt.replace(placeholder, str(response_number))
+
+        # --- NUOVO: prompt a blocchi con cache_control ---
+        prefix, suffix, dynamic_template = self.prompts.get(lang, self.prompts["it"])
+        system = [
+            {"type": "text", "text": prefix, "cache_control": {"type": "ephemeral"}},
+            {"type": "text", "text": dynamic_template.format(n=response_number)},
+            {"type": "text", "text": suffix, "cache_control": {"type": "ephemeral"}},
+        ]
 
         if response_number == 2:
             effective_max_tokens = 250
