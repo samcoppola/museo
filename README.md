@@ -304,6 +304,81 @@ sugli errori minori di rete verso ElevenLabs.
 
 ---
 
+### Applicato (sperimentale): prompt caching su `agent.py`
+
+**Stato**: attivo in `agent.py`, non ancora validato a fondo su più
+conversazioni consecutive — vedi avvertenza sotto.
+
+**File nuovi aggiunti** (nessun file di produzione precedente cancellato):
+- `prompts/it/comandante_v4_cache.py` — stesse istruzioni di
+  `comandante_v4.py`, verbatim (verificato con diff), ristrutturate in due
+  blocchi statici + un numero di risposta dinamico separato
+- `prompts/en/commander_v4_cache.py` — equivalente inglese, mancava e
+  quindi creato ex novo con lo stesso schema
+
+**Cosa è stato tolto/commentato in `agent.py`** (non cancellato — righe
+lasciate come commento per rollback rapido):
+```python
+# --- PROMPT ORIGINALE (senza cache) --- tenuto per riferimento/rollback ---
+# from prompts.it.comandante_v4 import SYSTEM_PROMPT_TEMPLATE as SYSTEM_PROMPT_IT
+# from prompts.en.commander_v4 import SYSTEM_PROMPT_TEMPLATE as SYSTEM_PROMPT_EN
+#
+# PROMPTS = {
+#     "it": SYSTEM_PROMPT_IT,
+#     "en": SYSTEM_PROMPT_EN,
+# }
+```
+e dentro `_build_system()`, la vecchia riga che sostituiva il placeholder
+in un'unica stringa:
+```python
+# base_prompt = self.prompts.get(lang, self.prompts["it"])
+# placeholder = "{{NUMERO_RISPOSTA}}" if lang == "it" else "{{RESPONSE_NUMBER}}"
+# system = base_prompt.replace(placeholder, str(response_number))
+```
+
+**Cosa è stato aggiunto in `agent.py`** al loro posto:
+```python
+from prompts.it.comandante_v4_cache import SYSTEM_PROMPT_PREFIX as PREFIX_IT, SYSTEM_PROMPT_SUFFIX as SUFFIX_IT
+from prompts.en.commander_v4_cache import SYSTEM_PROMPT_PREFIX as PREFIX_EN, SYSTEM_PROMPT_SUFFIX as SUFFIX_EN
+
+CACHE_PROMPTS = {
+    "it": (PREFIX_IT, SUFFIX_IT, "Stai dando la risposta numero: {n}\n\nSegui le istruzioni per il numero di risposta indicato sopra:"),
+    "en": (PREFIX_EN, SUFFIX_EN, "You are currently giving response number: {n}\n\nFollow the instructions for the response number indicated above:"),
+}
+```
+e in `_build_system()`:
+```python
+prefix, suffix, dynamic_template = self.prompts.get(lang, self.prompts["it"])
+system = [
+    {"type": "text", "text": prefix, "cache_control": {"type": "ephemeral"}},
+    {"type": "text", "text": dynamic_template.format(n=response_number)},
+    {"type": "text", "text": suffix, "cache_control": {"type": "ephemeral"}},
+]
+```
+`self.prompts` in `__init__` ora punta a `CACHE_PROMPTS` invece che a
+`PROMPTS` (anche questa riga vecchia è commentata sopra, non cancellata).
+
+**Per tornare alla versione precedente**: scommentare i blocchi "VECCHIO"
+sopra, ricommentare quelli "NUOVO", e cambiare `self.prompts = CACHE_PROMPTS`
+in `self.prompts = PROMPTS` — 3 punti in tutto, tutti in `agent.py`.
+
+**⚠️ Risultato dei test fatti finora**: la cache **non velocizza i turni
+dentro la stessa sessione** — ogni turno di un visitatore ha un numero di
+risposta diverso (2, poi 3, poi 4), quindi è sempre un cache-miss al primo
+utilizzo. Aiuta solo **tra visitatori diversi**, se il secondo arriva entro
+5 minuti dal primo (TTL della cache Anthropic) *e* si trova nello stesso
+punto della conversazione (stesso numero di risposta) di quello precedente.
+
+**Test ancora da fare prima di considerarlo pronto per la produzione**:
+verificato solo un caso pulito, una sessione isolata da zero. Serve
+verificare con **più conversazioni consecutive reali** (secondo, terzo
+visitatore di fila entro la finestra di 5 minuti) che il modello non perda
+il filo e non sbagli il numero di risposta quando la cache di una sessione
+precedente entra in gioco, invece di generare tutto da zero come nei test
+fatti finora.
+
+---
+
 ## Cosa gira dove: CPU/GPU, locale/cloud, consumo risorse
 
 | Componente | Locale/Cloud | CPU/GPU | Consumo indicativo |
