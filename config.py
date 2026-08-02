@@ -105,7 +105,7 @@ USE_ELEVEN_LABS = True
 ELEVEN_API_KEY = os.environ["ELEVEN_API_KEY"]
 ELEVEN_MODEL_ID = "eleven_flash_v2_5"
 ELEVEN_VOICE             = "GgHFK7Wdh706wXHjXaI3"
-ELEVEN_SPEED             = 0.85
+ELEVEN_SPEED             = 0.88
 ELEVEN_STABILITY         = 0.70   # 0=variabile/espressivo, 1=monotono/stabile — sotto 0.30 la voce deriva su testi lunghi
 ELEVEN_SIMILARITY_BOOST  = 0.90   # fedeltà alla voce originale
 ELEVEN_STREAM  = True   # streaming PCM via sounddevice (~100-200ms latenza)
@@ -120,7 +120,7 @@ PREGEN_AUDIO_DIR = os.path.join(_BASE_DIR, "data", "audio_cache")
 # Ruolo: rileva quando la persona esce → chiude sessione immediatamente.
 # L'avvio sessione avviene solo con tasto I/E (non automatico).
 USE_PERSON_DETECTION         = True
-PERSON_DETECTION_CAM_INDEX   = 2      # 0 = webcam integrata, 1-2 = USB esterna
+PERSON_DETECTION_CAM_INDEX   = 0      # 0 = webcam integrata, 1-2 = USB esterna
 PERSON_DETECTION_CONF        = 0.5
 PERSON_DETECTION_PERSISTENT_FRAMES = 15  # alzato da 5: 5 causava falsi "uscita" con sfarfallii YOLO
 PERSON_DETECTION_RESIZE_WIDTH = 640
@@ -133,7 +133,7 @@ WHISPER_MODEL  = os.path.join(_BASE_DIR, "models", "whisper-large-v3")
 WHISPER_DEVICE = "cuda"
 
 # VAD (usato solo con USE_STT=True)
-VAD_SILENCE_MS      = 2000   # ms di silenzio per fermare registrazione
+VAD_SILENCE_MS      = 1400   # ms di silenzio per fermare registrazione
 VAD_MIN_RECORD_MS   = 600    # durata minima registrazione
 VAD_START_THRESHOLD = 0.6    # soglia inizio parlato; alzare in ambienti rumorosi (0.7-0.8)
 VAD_STOP_THRESHOLD  = 0.25   # soglia fine parlato
@@ -142,7 +142,7 @@ VAD_STOP_THRESHOLD  = 0.25   # soglia fine parlato
 # La conversazione inizia solo quando viene detta una di queste frasi.
 # Frasi brevi/comuni escluse per evitare falsi positivi su altre lingue.
 TRIGGER_PHRASES_IT = ["salve comandante"]
-TRIGGER_PHRASES_EN = ["hail commander"]
+TRIGGER_PHRASES_EN = ["hello commander"]
 
 # --- LOGGING ---
 LOG_DIR        = os.path.join(_BASE_DIR, "logs")
