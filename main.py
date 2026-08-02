@@ -28,6 +28,7 @@ import httpx
 
 import config
 from agent import CharacterAgent
+from animation_trigger import invia_messaggio
 
 if config.USE_TTS:
     from tts import speak as tts_speak, generate_audio, play_audio, play_response_stream
@@ -376,6 +377,7 @@ def main():
                 ambient.start()
 
             # Welcome message
+            invia_messaggio(1)
             welcome = get_welcome_message(session_lang)
             print(f"\n  COMANDANTE: {welcome}\n")
             if config.USE_TTS:
@@ -587,6 +589,7 @@ def main():
 
             # Reset memoria per prossimo turista
             agent.reset_conversation()
+            invia_messaggio(3)
             print("[Sistema] Memoria resettata. Pronto per il prossimo turista.\n")
 
             # In modalità tastiera l'ambient è sempre attivo tra sessioni (reset_conversation() lo ferma)
